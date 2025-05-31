@@ -1,37 +1,35 @@
 export default function App() {
-  return (
-    <FilterableProductTable/>
-  );
+  return <FilterableProductTable products={PRODUCTS}/>;
 }
 
-function FilterableProductTable(){
+function FilterableProductTable({products}) {
   return(
     <div> 
       <SearchBar/>
       <br />
-      <ProductTable/>
+      <ProductTable products = {products}/>
     </div>
   );
 }
 
 function SearchBar() {
   return (
-    <div>
+    <form>
       <input type="text" placeholder="Search..." />
       <br/>
       <label>
         <input type="checkbox" />
         Only show products in stock
       </label>
-    </div>
+    </form>
   )
 }
 
-function ProductTable() {
+function ProductTable({ products }) {
   // Group products by category
   const categoryMap = {};
 
-  PRODUCTS.forEach(product => {
+  products.forEach(product => {
     if (!categoryMap[product.category]) {
       categoryMap[product.category] = [];
     }
@@ -50,8 +48,7 @@ function ProductTable() {
     categoryMap[category].forEach(product => {
       rows.push(
         <ProductRow
-          name={product.name}
-          price={product.price}
+          product={product}
           key={product.name}
         />
       );
@@ -83,11 +80,13 @@ function ProductCateGoryRow({ category }) {
   );
 }
 
-function ProductRow({ name, price }) {
+function ProductRow({ product }) {
+  const name = product.stocked ? product.name : <span style={{color: 'red'}}>{product.name}</span>;
+
   return (
     <tr>
       <td>{name}</td>
-      <td>{price}</td>
+      <td>{product.price}</td>
     </tr>
   );
 }
