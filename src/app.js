@@ -1,38 +1,57 @@
+import { useState } from "react";
+
 export default function App() {
   return <FilterableProductTable products={PRODUCTS}/>;
 }
 
 function FilterableProductTable({products}) {
+  const [searchText, setSearchText] = useState('');
+  const [inStockOnly, setInStockOnlyValue] = useState(false);
+
   return(
     <div> 
-      <SearchBar/>
+      <SearchBar 
+        searchText = {searchText} 
+        inStockOnly = {inStockOnly} 
+        onSearchTextChange= {setSearchText} 
+        onCheckboxChange={setInStockOnlyValue}/>
       <br />
-      <ProductTable products = {products}/>
+      <ProductTable products = {products} searchText = {searchText} inStockOnly = {inStockOnly}/>
     </div>
   );
 }
 
-function SearchBar() {
+
+
+function SearchBar({searchText, inStockOnly, onSearchTextChange, onCheckboxChange}) {
   return (
     <form>
-      <input type="text" placeholder="Search..." />
-      <br/>
+      <input type="text" value={searchText} placeholder="Search..." onChange={(e) => onSearchTextChange(e.target.value)}/>
       <label>
-        <input type="checkbox" />
+        <input type="checkbox" checked={inStockOnly} onChange={(e) => onCheckboxChange(e.target.checked)}/>
         Only show products in stock
       </label>
     </form>
   )
 }
 
-function ProductTable({ products }) {
+function ProductTable({ products, searchText, inStockOnly }) {
   // Group products by category
   const categoryMap = {};
 
   products.forEach(product => {
+    if(inStockOnly && !product.stocked) {
+      return; // Skip products that are not in stock
+    }
+    
+    if (searchText && !product.name.toLowerCase().includes(searchText.toLowerCase())) {
+      return; // Skip products that do not match the search text
+    }
+
     if (!categoryMap[product.category]) {
       categoryMap[product.category] = [];
     }
+    
     categoryMap[product.category].push(product);
   });
 
@@ -53,7 +72,6 @@ function ProductTable({ products }) {
         />
       );
     });
-    rows.push(<br key={`${category}-break`} />);
   });
 
   return (
@@ -65,7 +83,6 @@ function ProductTable({ products }) {
             <th>Price</th>
           </tr>
         </thead>
-        <br/>
         <tbody>{rows}</tbody>
       </table>
     </div>
